@@ -1,0 +1,135 @@
+%YAML:1.0
+#--------------------------------------------------------------------------------------------
+# Dataset Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+path_to_imus: '/home/mpl/data/slam_proj/odom1/imu.txt'
+save_path: /home/mpl/data/slam_proj/odom1/'
+#imgStart: 1640
+imgStart: 938
+imgEnd: 954
+#imgEnd: 2169
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+# Camera calibration and distortion parameters
+cameras:
+  c0:
+    id: 1
+    model: 'PinholeCamera'
+    size: [ 720, 540 ] # {width, height}
+    principal_point: [ 354.9098843417976,249.63508184285243 ] # {cx, cy}
+    focal_length: [353.2027219973048, 352.03017620562827] # {fx, cy}
+    distortion_type: 'equidistant'
+    distortion: [-0.041406958656326605, -0.0008094143738104868, -0.0005176164854447153, -0.00017974601015651392] # [k1 k2 p1 p2 k3]
+    Qsb: [-0.0001848, 0.7073389, 0.7068616, 0.004281] # {x, y, z, w}
+    tsb: [-0.006743523677538312, 0.010841567447803985,-0.06125464721844438]
+    undistort_beforehand: 1
+    path: '/home/mpl/data/Oxford/cloister/cam3/'
+  c1:
+    model: 'PinholeCamera'
+    size: [ 720, 540 ] # {width, height}
+    principal_point: [ 338.787344139198, 287.3356784091264] # {cx, cy}
+    focal_length: [350.4975085757994, 349.62797851125345 ] # {fx, cy}
+    distortion_type: 'equidistant'
+    distortion: [-0.036944434512801834, -0.005330219832569775, 0.0018583621192431556, -0.0006197611448244272] # [k1 k2 p1 p2 k3]
+    Qsb: [-0.7065744, -0.0003061, 0.0028341, 0.707633] # {x, y, z, w}
+    tsb: [0.008100949767213273,  0.013097760374266552,-0.07858317979699206]
+    undistort_beforehand: 1
+    path: '/home/mpl/data/Oxford/cloister/cam4/'
+  c2:
+    model: 'StereoCamera'
+    size: [ 720, 540 ]
+    focal_length_l: [ 352.44433737592203, 351.5926999077699 ] # {fx, cy}
+    focal_length_r: [ 352.61035231977274, 351.80795509839817 ] # {fx, cy}
+    principal_point_l: [ 360.7036161967808, 288.8165139790961 ] # {cx, cy}
+    principal_point_r: [ 355.28618305647717, 262.1618717187695 ] # {cx, cy}
+    distortion_l: [-0.03708179358470665, -0.004170257632495568, 6.190310817180907e-05, 0.00016784398836690767] # [k1 k2 p1 p2 k3]
+    distortion_r: [-0.036026978821875784, -0.0057694799589566225, 0.0013935274265662804, -0.00021596020882055515 ] # [k1 k2 p1 p2 k3]
+    distortion_type: 'equidistant'
+    Qsb: [-0.5007015, -0.4999394, -0.4983066, 0.501048 ] # {x, y, z, w}
+    tsb: [ 0.06377149, 0.00948631, -0.05059424 ]
+    Qrl: [0.00186664, -0.00126275, 0.00433496, 0.99998806]
+    trl: [-0.11035681, -0.00134062, -0.00015826]
+
+#    Qsb_r: [-0.4969638, -0.5018065, -0.4976941, 0.5035055] # {x, y, z, w}
+#    tsb_r: [-0.04654325, 0.00888729, -0.05055459]
+    path_l: '/home/mpl/data/Oxford/cloister/cam1/'
+    path_r: '/home/mpl/data/Oxford/cloister/cam0/'
+
+#  c2:
+#    model: 'PinholeCamera'
+#    size: [ 720, 540 ] # {width, height}
+#    principal_point: [355.28618305647717, 262.1618717187695] # {cx, cy}
+#    focal_length: [352.61035231977274, 351.80795509839817] # {fx, cy}
+#    distortion_type: 'OpenCV'
+#    distortion: [-0.036026978821875784, -0.0057694799589566225, 0.0013935274265662804,-0.00021596020882055515] # [k1 k2 p1 p2 k3]
+#    Qsb: [-0.4969638, -0.5018065, -0.4976941, 0.5035055 ] # {x, y, z, w}
+#    tsb: [-0.04654324600687491,  0.00888728894390666, -0.050554592735728654]
+#    topic: '/front_left'
+#    undistort_beforehand: 1
+#    isSideCamera: 0
+#    path: '/home/mpl/data/Oxford/cloister/cam0/'
+#--------------------------------------------------------------------------------------------
+# VO Parameters
+#--------------------------------------------------------------------------------------------
+
+#vo.mode: 0 # 0: central solver, 1: generalized solver
+#vo.keyframe_disparity: 18
+#vo.match_threshold: 150
+#vo.diparity_threshold: 10
+#vo.windowSize: 8
+#vo.obsLb: 2
+
+vo.mode: 1 # 0: central solver, 1: generalized solver
+vo.keyframe_disparity: 30
+vo.match_threshold: 150
+vo.diparity_threshold: 10
+vo.windowSize: 5
+vo.obsLb: 2
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.1
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 2
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.15
+Viewer.CameraLineWidth: 2
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -10
+Viewer.ViewpointZ: -0.1
+Viewer.ViewpointF: 2000
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST = iniThFAST/2
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 20
+
+
+# The number of points that produce each element of the oriented BRIEF descriptor. The
+#        default value 2 means the BRIEF where we take a random point pair and compare their brightnesses,
+#        so we get 0/1 response. Other possible values are 3 and 4. For example, 3 means that we take 3
+#        random points (of course, those point coordinates are random, but they are generated from the
+#        pre-defined seed, so each element of BRIEF descriptor is computed deterministically from the pixel
+#        rectangle), find point of maximum brightness and output index of the winner (0, 1 or 2). Such
+#        output will occupy 2 bits, and therefore it will need a special variant of Hamming distance,
+#        denoted as NORM_HAMMING2 (2 bits per bin). When WTA_K=4, we take 4 random points to compute each
+#        bin (that will also occupy 2 bits with possible values 0, 1, 2 or 3).
+ORBextractor.WTA_K: 2
+
+useFlannMatcher: 0
