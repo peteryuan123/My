@@ -15,7 +15,7 @@ public:
     FrameBase(double timeStamp):
     m_timeStamp(timeStamp) {};
 
-    ~FrameBase();
+    ~FrameBase(){};
 
 protected:
     // Todo: add posez

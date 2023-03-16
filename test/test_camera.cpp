@@ -103,33 +103,46 @@ int main(int argc, char ** argv)
         }
 
     }
+    std::cout << "---------------------Camera read end--------------------\n";
 
-    cv::Mat img_stereo_l = cv::imread(stereo0_image_names_l[0], cv::IMREAD_GRAYSCALE);
-    cv::Mat img_stereo_r = cv::imread(stereo0_image_names_r[0], cv::IMREAD_GRAYSCALE);
-    cv::Mat img_mono_0 = cv::imread(pinhole0_image_names[0], cv::IMREAD_GRAYSCALE);
-    cv::Mat img_mono_1 = cv::imread(pinhole1_image_names[0], cv::IMREAD_GRAYSCALE);
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+    // ****************PreUndistort test****************
+    // project triangulated point to other camera
+//    cv::Mat img_stereo_l = cv::imread(stereo0_image_names_l[0], cv::IMREAD_GRAYSCALE);
+//    cv::Mat img_stereo_r = cv::imread(stereo0_image_names_r[0], cv::IMREAD_GRAYSCALE);
+//    cv::Mat img_mono_0 = cv::imread(pinhole0_image_names[0], cv::IMREAD_GRAYSCALE);
+//    cv::Mat img_mono_1 = cv::imread(pinhole1_image_names[0], cv::IMREAD_GRAYSCALE);
+//
+//    StereoFrame stereo_frame_test(img_stereo_l, img_stereo_r, stereo0, 0);
+//    MonoFrame mono_frame_test0(img_mono_0, pinhole0, 0);
+//    MonoFrame mono_frame_test1(img_mono_1, pinhole1, 0);
+//
+//    cv::imwrite("stereo_l.png", stereo_frame_test.leftImageRectified());
+//    cv::imwrite("stereo_r.png", stereo_frame_test.rightImageRectified());
+//    cv::imwrite("mono0.png", mono_frame_test0.imageRectified());
+//    cv::imwrite("mono1.png", mono_frame_test1.imageRectified());
+//
+//    Eigen::Vector3d Xc1 = stereo0->triangulate(Eigen::Vector2d(583, 268), Eigen::Vector2d(568, 268));
+//    Eigen::Vector3d Xc2 = stereo0->triangulate(Eigen::Vector2d(92, 419), Eigen::Vector2d(80, 419));
+//
+//    Eigen::Vector3d Xw1 = stereo0->Qsb().conjugate() * (Xc1 - stereo0->tsb());
+//    Eigen::Vector3d Xw2 = stereo0->Qsb().conjugate() * (Xc2 - stereo0->tsb());
+//
+//    Eigen::Vector3d Xc1_mono0 = pinhole0->Qsb() * Xw1 + pinhole0->tsb();
+//    Eigen::Vector3d Xc2_mono1 = pinhole1->Qsb() * Xw2 + pinhole1->tsb();
+//
+//    std::cout << pinhole0->project(Xc1_mono0).transpose() << std::endl; // 100, 241, TODO::error too large
+//    std::cout << pinhole1->project(Xc2_mono1).transpose() << std::endl; // 507, 381
+    // ****************PreUndistort test****************
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 
-    StereoFrame stereo_frame_test(img_stereo_l, img_stereo_r, stereo0, 0);
-    MonoFrame mono_frame_test0(img_mono_0, pinhole0, 0);
-    MonoFrame mono_frame_test1(img_mono_1, pinhole1, 0);
 
-    cv::imwrite("stereo_l.png", stereo_frame_test.leftImageRectified());
-    cv::imwrite("stereo_r.png", stereo_frame_test.rightImageRectified());
-    cv::imwrite("mono0.png", mono_frame_test0.imageRectified());
-    cv::imwrite("mono1.png", mono_frame_test1.imageRectified());
 
-    Eigen::Vector3d Xc1 = stereo0->triangulate(Eigen::Vector2d(583, 268), Eigen::Vector2d(568, 268));
-    Eigen::Vector3d Xc2 = stereo0->triangulate(Eigen::Vector2d(92, 419), Eigen::Vector2d(80, 419));
-
-    Eigen::Vector3d Xw1 = stereo0->Qsb().conjugate() * (Xc1 - stereo0->tsb());
-    Eigen::Vector3d Xw2 = stereo0->Qsb().conjugate() * (Xc2 - stereo0->tsb());
-
-    Eigen::Vector3d Xc1_mono0 = pinhole0->Qsb() * Xw1 + pinhole0->tsb();
-    Eigen::Vector3d Xc2_mono1 = pinhole1->Qsb() * Xw2 + pinhole1->tsb();
-
-    std::cout << pinhole0->project(Xc1_mono0).transpose() << std::endl; // 40, 234
-    std::cout << pinhole1->project(Xc2_mono1).transpose() << std::endl; // 517, 412
-//    frame_test.showImage();
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+    //    frame_test.showImage();
 //    frame_test.showImageRectified();
 //
 //    Eigen::Vector2d test_triangulation_uv_l(392, 353);
@@ -141,4 +154,19 @@ int main(int argc, char ** argv)
 //
 //    std::cout << "--------------\n" << std::endl;
 //    std::cout << test_triangulation_Xc.normalized().transpose() << std::endl;
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+    // ****************Mono Distortion test (set the preundistort to 0)*************
+    cv::Mat distorted = cv::Mat(1, 1, CV_32FC2);
+    distorted.at<cv::Vec2f>(0, 0) = cv::Vec2f(360, 230);
+    cv::Mat undistorted;
+    pinhole0->undistortPoints(distorted, undistorted);
+    std::cout << distorted << std::endl;
+    std::cout << undistorted << std::endl;
+
+
 }

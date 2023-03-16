@@ -10,12 +10,18 @@
 #include <Eigen/Core>
 #include "CameraBase.h"
 
+
 class PinholeCamera: public CameraBase
 {
 public:
     typedef std::shared_ptr<PinholeCamera> Ptr;
 
     PinholeCamera(const cv::FileNode &sensorNode);
+
+    inline bool isPreUndistort() const
+    {
+        return m_isPreUndistort;
+    }
 
     inline Eigen::Vector2d project(const Eigen::Ref<const Eigen::Vector3d> &Xc) override
     {
@@ -30,17 +36,23 @@ public:
         return Xc.normalized();
     }
 
+
     void undistortImage(const cv::Mat& src, cv::Mat& dest);
+    void undistortPoints(const cv::Mat& src, cv::Mat& dest);
 
 protected:
-    Eigen::Matrix3d m_K;
+    Eigen::Matrix3d m_K;   // maybe redundent with "m_parameter" in base class
     Eigen::Matrix3d m_invK;
     Eigen::Vector2d m_size;
 
     // UndistortMap
-    cv::Mat m_M1, m_M2;
+    bool m_isPreUndistort;
+    cv::Mat m_M1, m_M2; // not used if m_isPreUndistort is set to false;
+
+    DistortionModel m_distortType;
 };
 
+//TODO: seems ORB did not use distortion coeff
 
 
 #endif //MYSLAM_PINHOLECAMERA_H

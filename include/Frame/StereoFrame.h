@@ -43,6 +43,8 @@ public:
 protected:
     cv::Mat m_leftImage, m_rightImage;
     cv::Mat m_leftImageRectified, m_rightImageRectified;
+
+
     StereoCamera::Ptr m_stereoCamera;
 };
 

@@ -12,7 +12,14 @@
 
 class CameraBase
 {
+
 public:
+    enum DistortionModel
+    {
+        EQUIDISTANT,
+        PINHOLE
+    };
+
     typedef std::shared_ptr<CameraBase> Ptr;
 
     CameraBase():

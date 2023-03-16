@@ -9,7 +9,8 @@ MonoFrame::MonoFrame(const cv::Mat &image, PinholeCamera::Ptr pinholeCamera, dou
 {
     if (image.empty())
         std::cout << "image empty" << std::endl;
-    m_pinholeCamera->undistortImage(m_image, m_imageRectified);
+    if (m_pinholeCamera->isPreUndistort())
+        m_pinholeCamera->undistortImage(m_image, m_imageRectified);
 }
 
 void  MonoFrame::showImage()

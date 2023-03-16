@@ -11,6 +11,7 @@
 
 #include "Tool/Timer.h"
 
+// StereoCamera only suppot: PreUndistort
 class StereoCamera: public CameraBase
 {
 public:

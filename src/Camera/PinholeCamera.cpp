@@ -7,7 +7,7 @@
 
 // CameraBase read id and extrinsic
 PinholeCamera::PinholeCamera(const cv::FileNode &sensorNode):
-CameraBase(sensorNode), m_K(Eigen::Matrix3d::Zero()), m_invK(Eigen::Matrix3d::Zero())
+CameraBase(sensorNode), m_K(Eigen::Matrix3d::Zero()), m_invK(Eigen::Matrix3d::Zero()), m_isPreUndistort(false)
 {
     cv::FileNode data;
     std::string distortion_type;
@@ -21,9 +21,15 @@ CameraBase(sensorNode), m_K(Eigen::Matrix3d::Zero()), m_invK(Eigen::Matrix3d::Ze
     data = sensorNode["distortion_type"];
     distortion_type = data.string();
     if (data.string() == "equidistant")
+    {
+        m_distortType = EQUIDISTANT;
         m_parameter.resize(8); // fx, fy, cx, cy, k1, k2, k3, k4
+    }
     else if (data.string() == "pinhole")
+    {
+        m_distortType = PINHOLE;
         m_parameter.resize(9); // fx, fy, cx, cy, k1 k2, p1, p2, k3
+    }
     else
         throw std::invalid_argument("not support type:" + data.string());
 
@@ -51,43 +57,48 @@ CameraBase(sensorNode), m_K(Eigen::Matrix3d::Zero()), m_invK(Eigen::Matrix3d::Ze
             0, 0, 1;
     // Intrinsic
 
-
-    // preUndistort (Currently only support preUndistort)
-    if (distortion_type == "equidistant")
+    m_isPreUndistort = static_cast<int>(sensorNode["preUndistort"]);
+    if (m_isPreUndistort)
     {
-        cv::Mat K;
-        cv::eigen2cv(m_K, K);
-        cv::Mat1f D = (cv::Mat1f(1, 4) << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7]);
-        cv::Size cvSize(m_size[0], m_size[1]);
+        // preUndistort (Currently only support preUndistort)
+        if (m_distortType == EQUIDISTANT)
+        {
+            cv::Mat K;
+            cv::eigen2cv(m_K, K);
+            cv::Mat1f D = (cv::Mat1f(1, 4) << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7]);
+            cv::Size cvSize(m_size[0], m_size[1]);
 
-        cv::Mat P;
-        // TODO: test P
-        cv::fisheye::estimateNewCameraMatrixForUndistortRectify(K, D, cvSize, cv::Mat::eye(3, 3, CV_32F), P, 1);
-        cv::fisheye::initUndistortRectifyMap(K, D, cv::Mat::eye(3, 3, CV_32F), P, cvSize, CV_32F, m_M1, m_M2);
+            cv::Mat P;
+            // TODO: test P
+            cv::fisheye::estimateNewCameraMatrixForUndistortRectify(K, D, cvSize, cv::Mat::eye(3, 3, CV_32F), P, 1);
+            cv::fisheye::initUndistortRectifyMap(K, D, cv::Mat::eye(3, 3, CV_32F), P, cvSize, CV_32F, m_M1, m_M2);
 
-        // 1
-        cv::cv2eigen(P, m_K);
-        // 2
+            // 1
+            cv::cv2eigen(P, m_K);
+            // 2
 //        Eigen::Matrix<double, 3, 4> Pr;
 //        cv::cv2eigen(P, Pr);
 //        m_K = Pr.block<3, 3>(0, 0);
 
-        m_invK = m_K.inverse();
+            m_invK = m_K.inverse();
+        }
+        else if (m_distortType == PINHOLE)
+        {
+            cv::Mat K;
+            cv::eigen2cv(m_K, K);
+            cv::Mat1f D = (cv::Mat1f(1, 5) << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7], m_parameter[8]);
+            cv::Size cvSize(m_size[0], m_size[1]);
+
+            cv::Mat new_K = cv::getOptimalNewCameraMatrix(K, D, cvSize, 0);
+            cv::initUndistortRectifyMap(K, D, cv::Mat::eye(3, 3, CV_32F), new_K, cvSize, CV_32F, m_M1, m_M2);
+
+            cv::cv2eigen(new_K, m_K);
+            m_invK = m_K.inverse();
+
+        }
     }
-    else if (distortion_type == "pinhole")
-    {
-        cv::Mat K;
-        cv::eigen2cv(m_K, K);
-        cv::Mat1f D = (cv::Mat1f(1, 5) << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7], m_parameter[8]);
-        cv::Size cvSize(m_size[0], m_size[1]);
 
-        cv::Mat new_K = cv::getOptimalNewCameraMatrix(K, D, cvSize, 0);
-        cv::initUndistortRectifyMap(K, D, cv::Mat::eye(3, 3, CV_32F), new_K, cvSize, CV_32F, m_M1, m_M2);
 
-        cv::cv2eigen(new_K, m_K);
-        m_invK = m_K.inverse();
-
-    }
     std::cout << "************Pinhole Camera**********\n";
     std::cout << "size_:" << m_size.transpose()<< std::endl;
     std::cout << "original parameter (fx, fy, cx, cy, distortion):" << m_parameter.transpose()<< std::endl;
@@ -101,4 +112,25 @@ CameraBase(sensorNode), m_K(Eigen::Matrix3d::Zero()), m_invK(Eigen::Matrix3d::Ze
 void PinholeCamera::undistortImage(const cv::Mat& src, cv::Mat& dest)
 {
     cv::remap(src, dest, m_M1, m_M2, cv::INTER_AREA);
+}
+
+void PinholeCamera::undistortPoints(const cv::Mat &src, cv::Mat &dest)
+{
+    cv::Mat K_cv = (cv::Mat_<float>(3, 3)
+            << m_parameter[0], 0.f, m_parameter[2], 0.f, m_parameter[1], m_parameter[3], 0.f, 0.f, 1.f);
+    if (m_distortType == EQUIDISTANT)
+    {
+        cv::Mat distort = (cv::Mat_<float>(4, 1)
+                << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7]);
+        std::cout << distort << std::endl;
+        std::cout << K_cv << std::endl;
+
+        cv::fisheye::undistortPoints(src, dest, K_cv, distort, cv::Mat(), K_cv);
+    }
+    else if(m_distortType == PINHOLE)
+    {
+        cv::Mat distort = (cv::Mat_<float>(5, 1)
+                << m_parameter[4], m_parameter[5], m_parameter[6], m_parameter[7], m_parameter[8]);
+        cv::undistortPoints(src, dest, K_cv, distort);
+    }
 }
